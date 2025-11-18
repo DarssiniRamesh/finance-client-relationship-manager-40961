@@ -1,49 +1,73 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import './App.css';
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
 
-// PUBLIC_INTERFACE
-function App() {
+import Dashboard from './pages/Dashboard';
+import ClientsList from './pages/ClientsList';
+import ClientForm from './pages/ClientForm';
+import Leads from './pages/Leads';
+import Activities from './pages/Activities';
+import Communications from './pages/Communications';
+
+/**
+ * PUBLIC_INTERFACE
+ * App
+ * Application root with routing + layout.
+ */
+function AppShell() {
   const [theme, setTheme] = useState('light');
+  const location = useLocation();
 
-  // Effect to apply theme to document element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // PUBLIC_INTERFACE
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));
+
+  const titleMap = {
+    '/': 'Dashboard',
+    '/clients': 'Clients',
+    '/clients/new': 'New Client',
+    '/leads': 'Leads',
+    '/activities': 'Activities',
+    '/communications': 'Communications'
   };
+  const path = location.pathname;
+  const title = titleMap[path] || 'CRM';
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Sidebar />
+      <main className="main">
+        <Topbar
+          title={title}
+          onToggleTheme={toggleTheme}
+          themeLabel={theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+        />
+        <section className="content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/clients" element={<ClientsList />} />
+            <Route path="/clients/new" element={<ClientForm />} />
+            <Route path="/clients/:id" element={<ClientForm />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/activities" element={<Activities />} />
+            <Route path="/communications" element={<Communications />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </section>
+      </main>
     </div>
   );
 }
 
-export default App;
+// PUBLIC_INTERFACE
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
+  );
+}
